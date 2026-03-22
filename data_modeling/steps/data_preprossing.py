@@ -4,7 +4,7 @@ import logging
 from zenml import step
 from typing import Annotated , Tuple
 
-from data_modeling.steps.feature_engineering import build_pipeline
+# from steps.feature_engineering import build_pipeline
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -47,15 +47,17 @@ def data_preprosser(df: pd.DataFrame) -> Tuple[
             X, y, test_size=0.2, random_state=42
         )
 
-        pipeline = build_pipeline(df)
+        # pipeline = build_pipeline(df)
 
-        # Fit ONLY on train
-        X_train_processed = pipeline.fit_transform(X_train)
-        X_test_processed = pipeline.transform(X_test)
+        # # Fit ONLY on train
+        # X_train_processed = pipeline.fit_transform(X_train)
+        # X_test_processed = pipeline.transform(X_test)
 
-        logging.info("Feature engineering completed")
+        # logging.info("Feature engineering completed")
 
-        return X_train_processed, X_test_processed, y_train, y_test
+        # return X_train_processed, X_test_processed, y_train, y_test
+
+        return X_train, X_test, y_train, y_test
 
     except Exception as e:
         logging.error(f"Error in preprocessing: {e}")
