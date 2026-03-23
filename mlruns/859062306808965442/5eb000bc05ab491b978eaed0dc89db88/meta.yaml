@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/859062306808965442/5eb000bc05ab491b978eaed0dc89db88/artifacts
+end_time: 1774249415287
+entry_point_name: ''
+experiment_id: '859062306808965442'
+lifecycle_stage: active
+run_id: 5eb000bc05ab491b978eaed0dc89db88
+run_name: conversion_rate_pipeline-2026_03_23-07_03_22_872318
+run_uuid: 5eb000bc05ab491b978eaed0dc89db88
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1774249414957
+status: 3
+tags: []
+user_id: MY_USERNAME

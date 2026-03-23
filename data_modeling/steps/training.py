@@ -2,6 +2,7 @@ from zenml import step
 from typing import Tuple, Annotated
 
 import numpy as np
+import pandas as pd
 import mlflow
 import logging
 
@@ -9,12 +10,12 @@ from xgboost import XGBRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import RandomizedSearchCV
 
-@step(experiment_tracker="exp-tracker_conversion")
+@step(experiment_tracker="experiment-tracker_Conversion")
 def advanced_training_step(
-    X_train: np.ndarray,
-    X_test: np.ndarray,
-    y_train,
-    y_test
+    X_train: pd.DataFrame,
+    X_test: pd.DataFrame,
+    y_train: pd.Series,
+    y_test: pd.Series
 ) -> Tuple[
     Annotated[XGBRegressor, "model"],
     Annotated[float, "rmse"],
@@ -25,6 +26,9 @@ def advanced_training_step(
         logging.info("Starting advanced training step (XGBoost)")
 
         mlflow.set_experiment("Conversion_Rate_Prediction")
+
+        if mlflow.active_run():
+            mlflow.end_run()
 
         with mlflow.start_run(run_name="XGBoost_Advanced_Training"):
 

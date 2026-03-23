@@ -338,4 +338,180 @@ All campaign types funnel users identically. The consistency suggests:
 * Landing pages
 * Offers
 * User journey
+---
 
+## 🛠️ **TECHNICAL SETUP & PIPELINE CONFIGURATION**
+
+### **Directory Structure**
+
+```
+Marketing_Campaign_Optimization_System/
+├── data/                           # Raw datasets
+│   └── marketing_campaign_dataset.xlsx
+├── data_analysis.ipynb             # Exploratory analysis
+├── data_cleaning.ipynb             # Data preprocessing
+├── data_modeling/                  # ML pipeline directory
+│   ├── run_pipeline.py             # Main pipeline entry point
+│   ├── piplines/
+│   │   └── train_pipeline.py       # Pipeline definition using ZenML
+│   ├── steps/
+│   │   ├── load_df.py              # Data loading step
+│   │   ├── data_preprossing.py     # Preprocessing step
+│   │   ├── feature_engineering.py  # Feature engineering step
+│   │   ├── training.py             # Model training step
+│   │   └── apply_fetaure_eng_on_data_preprossing.py
+│   ├── zenml-artifact/             # ZenML artifact storage
+│   ├── .zen/                       # ZenML configuration
+│   └── configure_zenml.py          # ZenML setup helper
+└── README.md                       # This file
+```
+
+---
+
+### **ZenML Pipeline Configuration**
+
+The project uses **ZenML** (an MLOps framework) to orchestrate the data pipeline. The pipeline executes the following steps in sequence:
+
+1. **Load Data** - Read the marketing campaign dataset
+2. **Data Preprocessing** - Clean and prepare the data
+3. **Feature Engineering** - Extract features and prepare training data
+4. **Advanced Training** - Train machine learning model and evaluate performance
+
+#### **Pipeline Components:**
+
+| Component | Type | Config |
+|-----------|------|--------|
+| **Orchestrator** | LocalOrchestrator | Runs locally (no remote orchestration) |
+| **Artifact Store** | LocalArtifactStore | Stores outputs in `./zenml-artifact/` |
+| **Stack** | default | Uses local execution |
+
+---
+
+### **Running the Pipeline**
+
+#### **Quick Start:**
+```bash
+cd data_modeling
+python run_pipeline.py
+```
+
+#### **What Happens:**
+1. ZenML initializes the pipeline
+2. Each step executes sequentially
+3. Outputs are stored in `zenml-artifact/` directory
+4. Pipeline run information is logged to `.zen/` directory
+
+---
+
+### **🐛 WINDOWS-SPECIFIC TROUBLESHOOTING**
+
+#### **Common Error: Path Separator Mismatch**
+
+**Error Message:**
+```
+FileNotFoundError: File `E:\...\zenml-artifact\pipeline_runs\logs` is outside of artifact store bounds `E:/.../ zenml-artifact`
+```
+
+**Root Cause:**
+ZenML stores artifact store paths using forward slashes (`/`) in its configuration, but Windows uses backslashes (`\`). When ZenML validates paths, it compares forward-slash configured paths against backslash-resolved paths, causing validation failures.
+
+**Solution Implemented:**
+
+1. **Initialize Fresh ZenML Configuration:**
+```bash
+cd data_modeling
+rm -r .zen -Force          # Remove old config  
+zenml init                 # Reinitialize
+```
+
+2. **Use the Windows Patch Module** (`zenml_windows_patch.py`):
+   - Imported automatically in `run_pipeline.py`
+   - Normalizes path separators before validation
+   - Converts backslashes to forward slashes for comparison
+
+3. **Key Configuration Files:**
+   - `run_pipeline.py` - Main entry point with patch import
+   - `zenml_windows_patch.py` - Path normalization logic
+   - `.zen/config.yaml` - Stores active stack ID
+
+#### **If You Still Get Path Errors:**
+
+1. **Reset ZenML completely:**
+```bash
+rm -r .zen zenml-artifact
+zenml init
+```
+
+2. **Verify artifact store path:**
+```bash
+zenml artifact-store describe default
+```
+   - Should show artifact store path without path errors
+
+3. **Check active stack:**
+```bash
+zenml stack describe
+```
+
+---
+
+### **Environment Variables**
+
+The following environment variables can be set to control ZenML behavior on Windows:
+
+| Variable | Purpose | Value |
+|----------|---------|-------|
+| `ZENML_DISABLE_SERVER_DAEMON` | Disable daemon (required on Windows) | `true` |
+| `ZENML_ANALYTICS_OPT_IN` | Disable analytics collection | `false` |
+| `ZENML_STEP_LOGGING_ENABLED` | Control step-level logging | `false` (optional) |
+| `ZENML_ARTIFACT_STORE_PATH` | Override artifact store location | Path with forward slashes |
+
+---
+
+### **Dependencies**
+
+Core dependencies for the pipeline:
+
+- `zenml` - ML pipeline orchestration framework
+- `pandas` - Data manipulation
+- `scikit-learn` - Machine learning models
+- `numpy` - Numerical computing
+- Python 3.9+
+
+Install with:
+```bash
+pip install zenml pandas scikit-learn numpy
+```
+
+---
+
+### **Debugging the Pipeline**
+
+#### **View Pipeline Runs:**
+```bash
+zenml pipeline runs list
+```
+
+#### **View Artifact Store Contents:**
+```bash
+ls zenml-artifact/
+```
+
+#### **Enable Verbose Logging:**
+Add to top of `run_pipeline.py`:
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+```
+
+---
+
+### **Next Steps for Pipeline Enhancement**
+
+1. **Add Remote Artifact Storage** - Use S3/GCS instead of local storage for production
+2. **Configure Remote Orchestration** - Use Airflow or Kubernetes for distributed execution
+3. **Add Model Registry** - Track model versions and deployments
+4. **Implement Data Validation** - Add Great Expectations for data quality checks
+5. **Add Experiment Tracking** - Integrate MLflow or Neptune for hyperparameter tracking
+
+---
