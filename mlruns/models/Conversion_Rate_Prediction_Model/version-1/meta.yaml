@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1774276323560
+current_stage: None
+description: ''
+last_updated_timestamp: 1774276323560
+name: Conversion_Rate_Prediction_Model
+run_id: 442503bd18f94ab394b3a1bee03154fc
+run_link: ''
+source: mlflow-artifacts:/356218149167719356/442503bd18f94ab394b3a1bee03154fc/artifacts/model
+status: READY
+status_message: null
+storage_location: mlflow-artifacts:/356218149167719356/442503bd18f94ab394b3a1bee03154fc/artifacts/model
+user_id: null
+version: 1

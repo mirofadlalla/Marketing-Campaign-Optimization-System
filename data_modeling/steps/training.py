@@ -25,7 +25,7 @@ def advanced_training_step(
     try:
         logging.info("Starting advanced training step (XGBoost)")
 
-        mlflow.set_experiment("Conversion_Rate_Prediction")
+        mlflow.set_experiment("conversion_rate_pipeline")
 
         if mlflow.active_run():
             mlflow.end_run()
@@ -63,11 +63,15 @@ def advanced_training_step(
             r2 = r2_score(y_test, y_pred)
 
             mlflow.log_params(random_search.best_params_)
+            mlflow.log_metric("train_size", X_train.shape[0])
             mlflow.log_metric("rmse", rmse)
             mlflow.log_metric("r2", r2)
 
-            mlflow.xgboost.log_model(best_model, "model")
-            mlflow.xgboost.log_model(best_model, "model")
+            mlflow.xgboost.log_model(
+            best_model,
+            artifact_path="model",
+            registered_model_name="Conversion_Rate_Prediction_Model" 
+        )
             
             return best_model, rmse, r2
             
