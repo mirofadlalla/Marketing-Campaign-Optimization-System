@@ -10,7 +10,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.impute import SimpleImputer
 
-from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.feature_selection import SelectKBest, f_classif
 
 @step(enable_cache=True)
 def build_pipeline(df : pd.DataFrame):
@@ -43,7 +43,7 @@ def build_pipeline(df : pd.DataFrame):
     logging.info("Building final pipeline with feature selection...")
     final_pipeline = Pipeline(steps=[
         ('preprocessor', preprocessor),
-        ('feature_selection', SelectKBest(score_func=f_regression, k=10))
+        ('feature_selection', SelectKBest(score_func=f_classif, k=15))
     ])
 
     logging.info("Pipeline built successfully.")

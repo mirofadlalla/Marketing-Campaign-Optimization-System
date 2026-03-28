@@ -6,7 +6,7 @@ import pandas as pd
 import mlflow
 import logging
 
-from xgboost import XGBRegressor
+from xgboost import XGBClassifier
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import RandomizedSearchCV
 
@@ -51,13 +51,17 @@ def advanced_training_step(
                 'colsample_bytree': [0.8, 1.0]
             }
 
-            model = XGBRegressor(random_state=42)
+            model = XGBClassifier(
+                use_label_encoder=False,
+                eval_metric="logloss",
+                random_state=42
+            )
 
             random_search = RandomizedSearchCV(
                 estimator=model,
                 param_distributions=param_dist,
                 n_iter=10,
-                scoring='neg_mean_squared_error',
+                scoring='roc_auc',
                 cv=3,
                 verbose=1,
                 random_state=42
@@ -74,17 +78,25 @@ def advanced_training_step(
             ])
 
             # Predictions and evaluation
+            # y_pred = full_pipeline.predict(X_test)
+            # rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+            # r2 = r2_score(y_test, y_pred)
+
+            from sklearn.metrics import roc_auc_score, f1_score
+
             y_pred = full_pipeline.predict(X_test)
-            rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-            r2 = r2_score(y_test, y_pred)
+            y_prob = full_pipeline.predict_proba(X_test)[:, 1]
+
+            roc_auc = roc_auc_score(y_test, y_prob)
+            f1 = f1_score(y_test, y_pred)
 
             from mlflow.models import infer_signature
             signature = infer_signature(X_train, y_pred)
 
             mlflow.log_params(random_search.best_params_)
             mlflow.log_metric("train_size", X_train.shape[0])
-            mlflow.log_metric("rmse", rmse)
-            mlflow.log_metric("r2", r2)
+            mlflow.log_metric("roc_auc", roc_auc)
+            mlflow.log_metric("f1", f1)
 
             mlflow.sklearn.log_model(
                 full_pipeline,
@@ -94,7 +106,7 @@ def advanced_training_step(
                 input_example=X_train.head(3)
             )
 
-            return full_pipeline, rmse, r2
+            return full_pipeline, roc_auc, f1
             
     except Exception as e:
         logging.error(f"Error in advanced training step: {e}")

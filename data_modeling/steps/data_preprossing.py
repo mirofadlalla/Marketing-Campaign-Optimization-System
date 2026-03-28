@@ -20,9 +20,12 @@ def data_preprosser(df: pd.DataFrame) -> Tuple[
     try:
         logging.info("Starting preprocessing step")
 
+        # 
+        df["conversion"] = (df["Conversion_Rate"] > 0.08).astype(int)
+
         # Drop unnecessary columns (NOT target)
         logging.info("Dropping unnecessary columns...")
-        droped_cols = ['Date', 'Campaign_ID']
+        droped_cols = ['Date', 'Campaign_ID','Conversion_Rate']
         df = df.drop([col for col in droped_cols if col in df.columns], axis=1)
 
         logging.info(f"Remaining columns after dropping: {df.columns.tolist()}")
@@ -38,9 +41,9 @@ def data_preprosser(df: pd.DataFrame) -> Tuple[
         logging.info(f"Shape after dropping nulls: {df.shape}")
 
         # Handle leakage
-        corr = df.corr(numeric_only=True)['Conversion_Rate']
+        corr = df.corr(numeric_only=True)['conversion']
         lek_features = corr[abs(corr) > 0.95].index.tolist()
-        lek_features = [col for col in lek_features if col != 'Conversion_Rate']
+        lek_features = [col for col in lek_features if col != 'conversion']
 
         logging.info(f"Identified leakage features: {lek_features}")
         logging.info(f"Shape before dropping leakage features: {df.shape}")
@@ -48,14 +51,14 @@ def data_preprosser(df: pd.DataFrame) -> Tuple[
         # Split data
         from sklearn.model_selection import train_test_split
 
-        X = df.drop(['Conversion_Rate'] + lek_features, axis=1)
-        y = df['Conversion_Rate']
+        X = df.drop(['conversion'] + lek_features, axis=1)
+        y = df['conversion']
 
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
         )
 
-        return X_train, X_test, y_train, y_test, df.drop(['Conversion_Rate'] + lek_features, axis=1)
+        return X_train, X_test, y_train, y_test, df.drop(['conversion'] + lek_features, axis=1)
 
     except Exception as e:
         logging.error(f"Error in preprocessing: {e}")
